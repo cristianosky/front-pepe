@@ -3,6 +3,11 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import api from './api';
 
+const PROJECT_ID =
+  Constants.expoConfig?.extra?.eas?.projectId ??
+  Constants.easConfig?.projectId ??
+  '3df22a9f-f9fb-4dac-b29d-6b7ca1f19e6f';
+
 export async function registerForPushNotificationsAsync() {
   // En Expo Go el módulo ni siquiera se carga para evitar el error de SDK 53+
   if (Constants.executionEnvironment === 'storeClient') return null;
@@ -38,10 +43,11 @@ export async function registerForPushNotificationsAsync() {
       });
     }
 
-    const { data: pushToken } = await Notifications.getExpoPushTokenAsync();
+    const { data: pushToken } = await Notifications.getExpoPushTokenAsync({ projectId: PROJECT_ID });
     await api.put('/auth/push-token', { pushToken });
     return pushToken;
-  } catch {
+  } catch (err) {
+    console.error('[Push] ERROR:', err.message, err);
     return null;
   }
 }

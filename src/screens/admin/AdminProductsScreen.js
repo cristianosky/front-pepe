@@ -6,6 +6,8 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { adminAPI } from '../../services/api';
 import { COLORS, formatPrice } from '../../theme';
+import useAdminMenu from './useAdminMenu';
+import AdminMenuModal from './AdminMenuModal';
 
 function ProductRow({ product, onEdit, onToggle }) {
   return (
@@ -37,6 +39,7 @@ function ProductRow({ product, onEdit, onToggle }) {
 }
 
 export default function AdminProductsScreen({ navigation }) {
+  const { menuOpen, closeMenu } = useAdminMenu(navigation);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -78,6 +81,7 @@ export default function AdminProductsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <AdminMenuModal visible={menuOpen} onClose={closeMenu} navigation={navigation} currentRoute="AdminProducts" />
       <TouchableOpacity
         style={styles.addBtn}
         onPress={() => navigation.navigate('AdminProductForm', { product: null })}

@@ -23,8 +23,18 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.pepefood.app"
+      "package": "com.pepefood.app",
+      "googleServicesFile": "./google-services.json"
     },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#FFD700"
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     },

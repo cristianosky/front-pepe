@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, FlatList, StyleSheet, ActivityIndicator,
-  TouchableOpacity, RefreshControl,
+  TouchableOpacity, RefreshControl, Alert,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { ordersAPI } from '../services/api';
@@ -11,16 +11,39 @@ const STATUS_CONFIG = {
   recibido:       { label: 'Recibido',    color: '#FF9800' },
   en_preparacion: { label: 'Preparando',  color: '#2196F3' },
   listo:          { label: 'Listo',       color: COLORS.yellow },
+  en_reparto:     { label: 'En reparto',  color: '#9C27B0' },
   entregado:      { label: 'Entregado',   color: COLORS.success },
   cancelado:      { label: 'Cancelado',   color: COLORS.error },
 };
 
-function OrderCard({ order, onPress }) {
+function OrderCard({ order, onPress, onCancelled }) {
   const config = STATUS_CONFIG[order.status] || STATUS_CONFIG.recibido;
   const date = new Date(order.created_at).toLocaleDateString('es-CO', {
     day: '2-digit', month: 'short', year: 'numeric',
   });
   const itemCount = order.items?.length ?? 0;
+
+  const handleCancel = () => {
+    Alert.alert(
+      'Cancelar pedido',
+      '¿Estás seguro? Esta acción no se puede deshacer.',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Sí, cancelar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await ordersAPI.cancel(order.id);
+              onCancelled();
+            } catch (e) {
+              Alert.alert('Error', e.message);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>
@@ -33,7 +56,14 @@ function OrderCard({ order, onPress }) {
       <Text style={styles.meta}>
         {date} · {order.delivery_type === 'domicilio' ? '🛵 Domicilio' : '🏪 Recoger'} · {itemCount} ítem{itemCount !== 1 ? 's' : ''}
       </Text>
-      <Text style={styles.total}>{formatPrice(order.total)}</Text>
+      <View style={styles.cardFooter}>
+        <Text style={styles.total}>{formatPrice(order.total)}</Text>
+        {order.status === 'recibido' && (
+          <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
+            <Text style={styles.cancelBtnText}>Cancelar</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
@@ -80,6 +110,7 @@ export default function OrderHistoryScreen({ navigation }) {
         <OrderCard
           order={item}
           onPress={() => navigation.navigate('Confirmation', { orderId: item.id })}
+          onCancelled={load}
         />
       )}
       ListEmptyComponent={
@@ -108,6 +139,15 @@ const styles = StyleSheet.create({
   badge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12 },
   badgeText: { color: COLORS.black, fontSize: 12, fontWeight: '700' },
   meta: { color: COLORS.gray, fontSize: 13 },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   total: { color: COLORS.yellow, fontSize: 18, fontWeight: 'bold' },
+  cancelBtn: {
+    borderWidth: 1,
+    borderColor: COLORS.error,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  cancelBtnText: { color: COLORS.error, fontSize: 13, fontWeight: '600' },
   empty: { color: COLORS.gray, fontSize: 16, textAlign: 'center' },
 });

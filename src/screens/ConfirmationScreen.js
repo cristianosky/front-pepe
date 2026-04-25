@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { io } from 'socket.io-client';
 import { ordersAPI } from '../services/api';
 import { SOCKET_URL } from '../config';
@@ -8,12 +8,13 @@ import { COLORS } from '../theme';
 const STATUS_CONFIG = {
   recibido:       { label: 'Pedido recibido',      emoji: '📋', color: COLORS.white },
   en_preparacion: { label: 'En preparación',        emoji: '👨‍🍳', color: '#FFA500' },
-  listo:          { label: '¡Listo para entregar!', emoji: '✅', color: COLORS.success },
+  listo:          { label: '¡Listo para entregar!', emoji: '✅', color: COLORS.yellow },
+  en_reparto:     { label: 'En camino',             emoji: '🛵', color: '#9C27B0' },
   entregado:      { label: '¡Entregado!',            emoji: '🎉', color: COLORS.success },
   cancelado:      { label: 'Cancelado',              emoji: '❌', color: COLORS.error },
 };
 
-const STATUSES = ['recibido', 'en_preparacion', 'listo', 'entregado'];
+const STATUSES = ['recibido', 'en_preparacion', 'listo', 'en_reparto', 'entregado'];
 
 export default function ConfirmationScreen({ route, navigation }) {
   const { orderId } = route.params;
@@ -38,6 +39,27 @@ export default function ConfirmationScreen({ route, navigation }) {
 
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.recibido;
   const currentStep = STATUSES.indexOf(status);
+
+  const handleCancel = () => {
+    Alert.alert(
+      'Cancelar pedido',
+      '¿Estás seguro? Esta acción no se puede deshacer.',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Sí, cancelar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await ordersAPI.cancel(orderId);
+            } catch (e) {
+              Alert.alert('Error', e.message);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -75,6 +97,12 @@ export default function ConfirmationScreen({ route, navigation }) {
             </View>
           )}
         </View>
+      )}
+
+      {status === 'recibido' && (
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <Text style={styles.cancelButtonText}>Cancelar pedido</Text>
+        </TouchableOpacity>
       )}
 
       {(status === 'entregado' || status === 'cancelado') && (
@@ -151,8 +179,21 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: '600',
   },
+  cancelButton: {
+    marginTop: 40,
+    borderWidth: 1,
+    borderColor: COLORS.error,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+  },
+  cancelButtonText: {
+    color: COLORS.error,
+    fontWeight: '600',
+    fontSize: 15,
+  },
   homeButton: {
-    marginTop: 48,
+    marginTop: 16,
     backgroundColor: COLORS.yellow,
     borderRadius: 12,
     paddingVertical: 16,

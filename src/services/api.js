@@ -42,9 +42,28 @@ export const ordersAPI = {
   getById: (id) => api.get(`/orders/${id}`),
   getByUser: (userId) => api.get(`/orders/user/${userId}`),
   updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
+  cancel: (id) => api.put(`/orders/${id}/cancel`),
+};
+
+export const staffAPI = {
+  getAll: () => api.get('/admin/staff'),
+  create: (data) => api.post('/admin/staff', data),
+  remove: (id) => api.delete(`/admin/staff/${id}`),
+};
+
+export const cocinaAPI = {
+  getOrders: () => api.get('/cocina/orders'),
+  nextStatus: (id) => api.put(`/cocina/orders/${id}/next`),
+};
+
+export const repartidorAPI = {
+  getOrders: () => api.get('/repartidor/orders'),
+  pickup: (id) => api.put(`/repartidor/orders/${id}/pickup`),
+  markDelivered: (id) => api.put(`/repartidor/orders/${id}/delivered`),
 };
 
 export const adminAPI = {
+  getStats: () => api.get('/admin/stats'),
   getOrders: (status) => api.get('/admin/orders', { params: status ? { status } : {} }),
   updateOrderStatus: (id, status) => api.put(`/admin/orders/${id}/status`, { status }),
   getProducts: () => api.get('/admin/products'),

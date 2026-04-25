@@ -10,3 +10,5 @@ npm-debug.*
 *.orig.*
 web-build/
 .env
+google-services.json
+pepefood-59ad4-firebase-adminsdk-fbsvc-f6fe6ba9c2.json

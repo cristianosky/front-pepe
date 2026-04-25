@@ -15,21 +15,24 @@ import { io } from 'socket.io-client';
 import { adminAPI } from '../../services/api';
 import { COLORS, formatPrice } from '../../theme';
 import { SOCKET_URL } from '../../config';
-import { useAuth } from '../../context/AuthContext';
+import useAdminMenu from './useAdminMenu';
+import AdminMenuModal from './AdminMenuModal';
 
 const FILTERS = [
-  { label: 'Todos', value: null },
-  { label: 'Recibido', value: 'recibido' },
+  { label: 'Todos',      value: null },
+  { label: 'Recibido',   value: 'recibido' },
   { label: 'Preparando', value: 'en_preparacion' },
-  { label: 'Listo', value: 'listo' },
-  { label: 'Entregado', value: 'entregado' },
-  { label: 'Cancelado', value: 'cancelado' },
+  { label: 'Listo',      value: 'listo' },
+  { label: 'En reparto', value: 'en_reparto' },
+  { label: 'Entregado',  value: 'entregado' },
+  { label: 'Cancelado',  value: 'cancelado' },
 ];
 
 const STATUS_CONFIG = {
   recibido:       { label: 'Recibido',    color: '#FF9800', next: 'en_preparacion', nextLabel: 'Iniciar preparación' },
   en_preparacion: { label: 'Preparando',  color: '#2196F3', next: 'listo',          nextLabel: 'Marcar listo' },
-  listo:          { label: 'Listo',       color: COLORS.yellow, next: 'entregado',  nextLabel: 'Marcar entregado' },
+  listo:          { label: 'Listo',       color: COLORS.yellow, next: 'en_reparto', nextLabel: 'Salió a repartir' },
+  en_reparto:     { label: 'En reparto',  color: '#9C27B0', next: 'entregado',      nextLabel: 'Marcar entregado' },
   entregado:      { label: 'Entregado',   color: COLORS.success, next: null,        nextLabel: null },
   cancelado:      { label: 'Cancelado',   color: COLORS.error,   next: null,        nextLabel: null },
 };
@@ -118,7 +121,7 @@ function OrderCard({ order, onStatusChange, onPress }) {
 }
 
 export default function AdminOrdersScreen({ navigation }) {
-  const { logout } = useAuth();
+  const { menuOpen, closeMenu } = useAdminMenu(navigation);
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -126,25 +129,6 @@ export default function AdminOrdersScreen({ navigation }) {
   const filterRef = useRef(filter);
   filterRef.current = filter;
 
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginRight: 14 }}>
-          <TouchableOpacity onPress={() => navigation.navigate('AdminProducts')}>
-            <Text style={{ color: COLORS.yellow, fontSize: 14, fontWeight: '600' }}>Productos</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() =>
-            Alert.alert('Cerrar sesión', '¿Estás seguro?', [
-              { text: 'Cancelar', style: 'cancel' },
-              { text: 'Salir', style: 'destructive', onPress: logout },
-            ])
-          }>
-            <Text style={{ color: COLORS.error, fontSize: 14, fontWeight: '600' }}>Salir</Text>
-          </TouchableOpacity>
-        </View>
-      ),
-    });
-  }, [navigation, logout]);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -193,6 +177,7 @@ export default function AdminOrdersScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <AdminMenuModal visible={menuOpen} onClose={closeMenu} navigation={navigation} currentRoute="AdminOrders" />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

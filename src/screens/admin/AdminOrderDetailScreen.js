@@ -16,7 +16,8 @@ import { SOCKET_URL } from '../../config';
 const STATUS_CONFIG = {
   recibido:       { label: 'Recibido',   color: '#FF9800', next: 'en_preparacion', nextLabel: 'Iniciar preparación' },
   en_preparacion: { label: 'Preparando', color: '#2196F3', next: 'listo',          nextLabel: 'Marcar listo' },
-  listo:          { label: 'Listo',      color: COLORS.yellow, next: 'entregado',  nextLabel: 'Marcar entregado' },
+  listo:          { label: 'Listo',      color: COLORS.yellow, next: 'en_reparto', nextLabel: 'Salió a repartir' },
+  en_reparto:     { label: 'En reparto', color: '#9C27B0', next: 'entregado',      nextLabel: 'Marcar entregado' },
   entregado:      { label: 'Entregado',  color: COLORS.success, next: null,        nextLabel: null },
   cancelado:      { label: 'Cancelado',  color: COLORS.error,   next: null,        nextLabel: null },
 };

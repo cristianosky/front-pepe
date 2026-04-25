@@ -1,8 +1,8 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { COLORS } from '../theme';
@@ -20,6 +20,11 @@ import AdminOrdersScreen from '../screens/admin/AdminOrdersScreen';
 import AdminOrderDetailScreen from '../screens/admin/AdminOrderDetailScreen';
 import AdminProductsScreen from '../screens/admin/AdminProductsScreen';
 import AdminProductFormScreen from '../screens/admin/AdminProductFormScreen';
+import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
+import AdminStaffScreen from '../screens/admin/AdminStaffScreen';
+import AdminStaffFormScreen from '../screens/admin/AdminStaffFormScreen';
+import CocinaScreen from '../screens/cocina/CocinaScreen';
+import RepartidorScreen from '../screens/repartidor/RepartidorScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -32,7 +37,6 @@ const DARK_HEADER = {
 
 function HomeTabs() {
   const { itemCount } = useCart();
-
   return (
     <Tab.Navigator
       screenOptions={{
@@ -84,26 +88,13 @@ function AuthStack() {
 function AdminStack() {
   return (
     <Stack.Navigator screenOptions={DARK_HEADER}>
-      <Stack.Screen
-        name="AdminOrders"
-        component={AdminOrdersScreen}
-        options={{ title: 'Panel de pedidos' }}
-      />
-      <Stack.Screen
-        name="AdminOrderDetail"
-        component={AdminOrderDetailScreen}
-        options={{ title: 'Detalle del pedido' }}
-      />
-      <Stack.Screen
-        name="AdminProducts"
-        component={AdminProductsScreen}
-        options={{ title: 'Productos' }}
-      />
-      <Stack.Screen
-        name="AdminProductForm"
-        component={AdminProductFormScreen}
-        options={{ title: 'Producto' }}
-      />
+      <Stack.Screen name="AdminDashboard"   component={AdminDashboardScreen}   options={{ title: 'Dashboard' }} />
+      <Stack.Screen name="AdminOrders"      component={AdminOrdersScreen}      options={{ title: 'Pedidos' }} />
+      <Stack.Screen name="AdminProducts"    component={AdminProductsScreen}    options={{ title: 'Productos' }} />
+      <Stack.Screen name="AdminStaff"       component={AdminStaffScreen}       options={{ title: 'Personal' }} />
+      <Stack.Screen name="AdminOrderDetail" component={AdminOrderDetailScreen} options={{ title: 'Detalle del pedido' }} />
+      <Stack.Screen name="AdminProductForm" component={AdminProductFormScreen} options={{ title: 'Producto' }} />
+      <Stack.Screen name="AdminStaffForm"   component={AdminStaffFormScreen}   options={{ title: 'Nuevo usuario' }} />
     </Stack.Navigator>
   );
 }
@@ -111,32 +102,47 @@ function AdminStack() {
 function AppStack() {
   return (
     <Stack.Navigator screenOptions={DARK_HEADER}>
-      <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
+      <Stack.Screen name="HomeTabs"    component={HomeTabs}           options={{ headerShown: false }} />
       <Stack.Screen name="ProductDetail" component={ProductDetailScreen} options={{ title: 'Detalle' }} />
-      <Stack.Screen name="Checkout" component={CheckoutScreen} options={{ title: 'Confirmar pedido' }} />
+      <Stack.Screen name="Checkout"    component={CheckoutScreen}     options={{ title: 'Confirmar pedido' }} />
       <Stack.Screen
         name="Confirmation"
         component={ConfirmationScreen}
         options={{ title: 'Tu pedido', headerLeft: () => null }}
       />
-      <Stack.Screen
-        name="OrderHistory"
-        component={OrderHistoryScreen}
-        options={{ title: 'Mis pedidos' }}
-      />
+      <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} options={{ title: 'Mis pedidos' }} />
+    </Stack.Navigator>
+  );
+}
+
+function CocinaStack() {
+  return (
+    <Stack.Navigator screenOptions={DARK_HEADER}>
+      <Stack.Screen name="Cocina" component={CocinaScreen} options={{ title: 'Cocina' }} />
+    </Stack.Navigator>
+  );
+}
+
+function RepartidorStack() {
+  return (
+    <Stack.Navigator screenOptions={DARK_HEADER}>
+      <Stack.Screen name="Repartidor" component={RepartidorScreen} options={{ title: 'Entregas' }} />
     </Stack.Navigator>
   );
 }
 
 export default function RootNavigation() {
   const { user } = useAuth();
-
   return (
     <NavigationContainer>
       {!user ? (
         <AuthStack />
       ) : user.role === 'admin' ? (
         <AdminStack />
+      ) : user.role === 'cocinero' ? (
+        <CocinaStack />
+      ) : user.role === 'repartidor' ? (
+        <RepartidorStack />
       ) : (
         <AppStack />
       )}
